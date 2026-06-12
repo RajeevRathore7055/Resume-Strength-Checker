@@ -95,3 +95,24 @@ tmp/
 secret_key.txt
 config.json
 credentials.json
+
+# Python
+__pycache__/
+*.pyc
+
+# Virtual Environment
+venv/
+env/
+
+# Database
+*.db
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Environment Variables
+.env
