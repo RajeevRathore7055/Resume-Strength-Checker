@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Resume Matcher</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI",sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:
+    radial-gradient(circle at top left,#312e81,#0f172a),
+    radial-gradient(circle at bottom right,#7e22ce,#111827);
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:30px;
+}
+
+.container{
+    width:100%;
+    max-width:1100px;
+
+    backdrop-filter:blur(20px);
+    background:rgba(255,255,255,0.08);
+
+    border:1px solid rgba(255,255,255,.15);
+
+    border-radius:25px;
+    padding:35px;
+
+    box-shadow:
+    0 0 30px rgba(0,255,255,.1),
+    0 0 60px rgba(139,92,246,.15);
+}
+
+.header{
+    text-align:center;
+    margin-bottom:35px;
+}
+
+.header h1{
+    font-size:3rem;
+    background:linear-gradient(
+    90deg,
+    #06b6d4,
+    #8b5cf6,
+    #ec4899
+    );
+
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.header p{
+    color:#cbd5e1;
+    margin-top:10px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:25px;
+}
+
+.card{
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:20px;
+    padding:25px;
+}
+
+.card h2{
+    margin-bottom:15px;
+    color:#38bdf8;
+}
+
+.upload-box{
+    border:2px dashed #38bdf8;
+    border-radius:15px;
+    padding:25px;
+    text-align:center;
+    margin-bottom:15px;
+}
+
+input[type=file]{
+    width:100%;
+    color:white;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+
+    background:linear-gradient(
+    90deg,
+    #06b6d4,
+    #8b5cf6
+    );
+
+    color:white;
+    font-size:15px;
+    font-weight:bold;
+
+    cursor:pointer;
+    transition:.3s;
+}
+
+button:hover{
+    transform:translateY(-3px);
+    box-shadow:
+    0 0 20px #06b6d4;
+}
+
+.result-section{
+    margin-top:30px;
+
+    background:rgba(255,255,255,.05);
+    border-radius:20px;
+    padding:30px;
+}
+
+.result-section h2{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.score-circle{
+
+    width:180px;
+    height:180px;
+
+    border-radius:50%;
+
+    margin:20px auto;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    font-size:38px;
+    font-weight:bold;
+
+    background:
+    conic-gradient(
+    #06b6d4 0deg,
+    #1e293b 0deg
+    );
+
+    box-shadow:
+    0 0 25px rgba(6,182,212,.4);
+}
+
+.badge{
+    display:inline-block;
+
+    padding:8px 14px;
+    margin:5px;
+
+    border-radius:30px;
+
+    background:linear-gradient(
+    90deg,
+    #06b6d4,
+    #8b5cf6
+    );
+}
+
+.skills-section{
+    margin-top:20px;
+}
+
+.loading{
+    text-align:center;
+    color:#38bdf8;
+    margin-top:20px;
+}
+
+.success{
+    color:#22c55e;
+}
+
+.error{
+    color:#ef4444;
+}
+
+#output{
+    margin-top:25px;
+}
+
+@media(max-width:768px){
+
+.grid{
+grid-template-columns:1fr;
+}
+
+.header h1{
+font-size:2rem;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+<h1>🤖 AI Resume Matcher</h1>
+<p>Upload Job Description and Resume to get AI Skill Matching Score</p>
+</div>
+
+<div class="grid">
+
+<div class="card">
+
+<h2>📄 Upload Job Description</h2>
+
+<div class="upload-box">
+<input type="file" id="jdFile" accept=".txt,.pdf">
+</div>
+
+<button onclick="uploadJD()">
+Upload JD
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>📑 Upload Resume</h2>
+
+<div class="upload-box">
+<input type="file" id="resumeFile" accept=".txt,.pdf">
+</div>
+
+<button onclick="uploadResume()">
+Analyze Resume
+</button>
+
+</div>
+
+</div>
+
+<div class="result-section">
+
+<h2>📊 Match Analysis</h2>
+
+<div class="score-circle" id="scoreCircle">
+0%
+</div>
+
+<div id="output">
+Waiting for analysis...
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let jdSkills = [];
+
+async function uploadJD(){
+
+    const file =
+    document.getElementById("jdFile").files[0];
+
+    if(!file){
+        alert("Please select JD file");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file",file);
+
+    document.getElementById("output").innerHTML =
+    "<div class='loading'>Processing JD...</div>";
+
+    try{
+
+        const response = await fetch(
+        "http://127.0.0.1:8000/upload-jd/",
+        {
+            method:"POST",
+            body:formData
+        });
+
+        const data = await response.json();
+
+        jdSkills = data.jd_skills || [];
+
+        document.getElementById("output").innerHTML =
+
+        `
+        <h3 class="success">✅ JD Uploaded Successfully</h3>
+
+        <div class="skills-section">
+
+        <h4>Detected Skills</h4>
+
+        ${
+        jdSkills.map(skill =>
+        `<span class="badge">${skill}</span>`
+        ).join("")
+        }
+
+        </div>
+        `;
+
+    }
+
+    catch(error){
+
+        document.getElementById("output").innerHTML =
+        "<div class='error'>Error uploading JD</div>";
+
+    }
+
+}
+
+async function uploadResume(){
+
+    if(jdSkills.length===0){
+
+        alert("Upload JD first");
+        return;
+
+    }
+
+    const file =
+    document.getElementById("resumeFile").files[0];
+
+    if(!file){
+
+        alert("Select Resume");
+        return;
+
+    }
+
+    const formData = new FormData();
+
+    formData.append("file",file);
+
+    formData.append(
+    "jd_skills",
+    JSON.stringify(jdSkills)
+    );
+
+    document.getElementById("output").innerHTML =
+    "<div class='loading'>Analyzing Resume...</div>";
+
+    try{
+
+        const response = await fetch(
+        "http://127.0.0.1:8000/upload-resume/",
+        {
+            method:"POST",
+            body:formData
+        });
+
+        const data = await response.json();
+
+        const score =
+        data.match_score || 0;
+
+        document.getElementById("scoreCircle").innerHTML =
+        score + "%";
+
+        document.getElementById("scoreCircle").style.background =
+
+        `conic-gradient(
+        #06b6d4 ${score*3.6}deg,
+        #1e293b ${score*3.6}deg
+        )`;
+
+        document.getElementById("output").innerHTML =
+
+        `
+        <h3 class="success">
+        ✅ Resume Analysis Complete
+        </h3>
+
+        <br>
+
+        <h4>Match Score: ${score}%</h4>
+
+        <br>
+
+        <h4>JD Skills</h4>
+
+        ${
+        data.jd_skills.map(skill =>
+        `<span class="badge">${skill}</span>`
+        ).join("")
+        }
+
+        <br><br>
+
+        <h4>Resume Skills</h4>
+
+        ${
+        data.resume_skills.map(skill =>
+        `<span class="badge">${skill}</span>`
+        ).join("")
+        }
+
+        <br><br>
+
+        <h4>File Name</h4>
+
+        <p>${data.filename}</p>
+        `;
+
+    }
+
+    catch(error){
+
+        document.getElementById("output").innerHTML =
+        "<div class='error'>Error analyzing resume</div>";
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
