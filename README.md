@@ -27,4 +27,4 @@ A FastAPI based Resume Matcher application that compares resumes with Job Descri
 
 ```bash
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn main:app --reload"# Resume-Strength-Checker-Hosted" 
