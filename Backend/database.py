@@ -22,22 +22,43 @@
 # SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Base         = declarative_base()
 
-import os
+# import os
+# from sqlalchemy import create_engine
+# from sqlalchemy.ext.declarative import declarative_base
+# from sqlalchemy.orm import sessionmaker
+# from dotenv import load_dotenv
+
+# load_dotenv()
+
+# MYSQL_HOST     = os.getenv("DB_HOST",     "localhost")
+# MYSQL_PORT     = os.getenv("DB_PORT",     "3306")
+# MYSQL_USER     = os.getenv("DB_USER",     "root")
+# MYSQL_PASSWORD = os.getenv("DB_PASSWORD", "")
+# MYSQL_DATABASE = os.getenv("DB_NAME",     "railway")
+
+# DB_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
+
+# engine       = create_engine(DB_URL)
+# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Base         = declarative_base()
+
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
 
-load_dotenv()
+DATABASE_URL = "sqlite:///./resume.db"
 
-MYSQL_HOST     = os.getenv("DB_HOST",     "localhost")
-MYSQL_PORT     = os.getenv("DB_PORT",     "3306")
-MYSQL_USER     = os.getenv("DB_USER",     "root")
-MYSQL_PASSWORD = os.getenv("DB_PASSWORD", "")
-MYSQL_DATABASE = os.getenv("DB_NAME",     "railway")
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={
+        "check_same_thread": False
+    }
+)
 
-DB_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
 
-engine       = create_engine(DB_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base         = declarative_base()
+Base = declarative_base()
