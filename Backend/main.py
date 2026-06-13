@@ -10,6 +10,7 @@ import json
 from database import SessionLocal, engine, Base
 from models import Resume
 from matcher import extract_text, extract_skills, match_skills
+from pathlib import Path
 
 Base.metadata.create_all(bind=engine)
 
@@ -39,14 +40,26 @@ def get_db():
 # @app.get("/")
 # def home():
 #     return {"message": "Resume Matcher Backend Running"}
-@app.get("/")
+# @app.get("/")
+# def home():
+#     return FileResponse(
+#         os.path.join(
+#             "Frontend",
+#             "index.html"
+#         )
+#     )
+    @app.get("/")
 def home():
-    return FileResponse(
-        os.path.join(
-            "Frontend",
-            "index.html"
-        )
+
+    current_dir = Path(__file__).parent
+
+    frontend_path = (
+        current_dir.parent /
+        "Frontend" /
+        "index.html"
     )
+
+    return FileResponse(frontend_path)
 
 @app.get("/health")
 def health():
