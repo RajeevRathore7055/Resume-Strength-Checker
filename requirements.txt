@@ -3,3 +3,10 @@ uvicorn
 sqlalchemy
 pymysql
 python-multipart
+fastapi
+uvicorn
+sqlalchemy
+pymysql
+python-multipart
+PyPDF2
+cryptography

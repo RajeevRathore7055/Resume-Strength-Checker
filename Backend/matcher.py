@@ -1,41 +1,15 @@
-# def extract_skills(text: str):
-#     skills = [
-#         "python", "java", "fastapi", "django",
-#         "sql", "mysql", "html", "css", "react",
-#         "machine learning", "ai"
-#     ]
-
-#     text = text.lower()
-
-#     return [skill for skill in skills if skill in text]
-
-
-# def match_skills(jd_skills, resume_skills):
-#     jd = set(jd_skills)
-#     resume = set(resume_skills)
-
-#     if len(jd) == 0:
-#         return 0
-
-#     matched = jd.intersection(resume)
-
-#     score = (len(matched) / len(jd)) * 100
-
-#     return round(score, 2)
-
-import re
+import io
 import PyPDF2
 
-def extract_text(file):
-    filename = file.filename.lower()
+def extract_text(file_bytes: bytes, filename: str) -> str:
+    """Extract text from .txt or .pdf file bytes."""
+    fname = filename.lower()
 
-    # TXT
-    if filename.endswith(".txt"):
-        return file.file.read().decode("utf-8")
+    if fname.endswith(".txt"):
+        return file_bytes.decode("utf-8", errors="ignore")
 
-    # PDF
-    elif filename.endswith(".pdf"):
-        reader = PyPDF2.PdfReader(file.file)
+    elif fname.endswith(".pdf"):
+        reader = PyPDF2.PdfReader(io.BytesIO(file_bytes))
         text = ""
         for page in reader.pages:
             text += page.extract_text() or ""
@@ -44,32 +18,40 @@ def extract_text(file):
     return ""
 
 
-def extract_skills(text):
+def extract_skills(text: str) -> list:
+    """Match skills from text against skills database."""
     text = text.lower()
 
     skills_db = [
-        "python", "java", "react", "node", "mysql",
-        "mongodb", "fastapi", "flask", "aws", "docker",
-        "html", "css", "javascript"
+        "python", "java", "javascript", "typescript",
+        "react", "node", "node.js", "express",
+        "html", "css", "tailwind",
+        "fastapi", "flask", "django",
+        "mysql", "postgresql", "mongodb", "redis", "sql",
+        "docker", "kubernetes", "aws", "git",
+        "machine learning", "deep learning", "nlp",
+        "langchain", "llm", "rag", "ai",
+        "pandas", "numpy", "scikit-learn",
     ]
 
-    found = []
-
-    for skill in skills_db:
-        if skill in text:
-            found.append(skill)
-
-    return found
+    return [skill for skill in skills_db if skill in text]
 
 
-def match_skills(jd_skills, resume_skills):
-    jd_set = set(jd_skills)
+def match_skills(jd_skills: list, resume_skills: list) -> dict:
+    """
+    Returns:
+      score   — match percentage
+      matched — skills present in both JD and resume
+      missing — skills in JD but not in resume
+    """
+    jd_set     = set(jd_skills)
     resume_set = set(resume_skills)
 
-    if len(jd_set) == 0:
-        return 0
+    if not jd_set:
+        return {"score": 0, "matched": [], "missing": []}
 
-    matched = jd_set.intersection(resume_set)
+    matched = list(jd_set & resume_set)
+    missing = list(jd_set - resume_set)
+    score   = round(len(matched) / len(jd_set) * 100, 2)
 
-    score = (len(matched) / len(jd_set)) * 100
-    return round(score, 2)
+    return {"score": score, "matched": matched, "missing": missing}
