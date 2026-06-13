@@ -116,3 +116,20 @@ env/
 
 # Environment Variables
 .env
+
+# Environment variables - NEVER push this
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
