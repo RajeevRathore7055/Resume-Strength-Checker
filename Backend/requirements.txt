@@ -21,3 +21,10 @@ python-multipart
 PyPDF2
 cryptography
 python-dotenv
+
+fastapi
+uvicorn
+sqlalchemy
+python-multipart
+PyPDF2
+psycopg2-binary
