@@ -34,7 +34,6 @@ def get_db():
 # def root():
 @app.get("/")
 def home():
-    return FileResponse("static/index.html")
     return {"status": "ok", "message": "AI Resume Matcher API is running!"}
 
 
