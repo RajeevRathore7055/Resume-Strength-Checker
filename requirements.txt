@@ -3,6 +3,7 @@ uvicorn
 sqlalchemy
 pymysql
 python-multipart
+<<<<<<< HEAD
 fastapi
 uvicorn
 sqlalchemy
@@ -10,3 +11,6 @@ pymysql
 python-multipart
 PyPDF2
 cryptography
+=======
+PyPDF2
+>>>>>>> 6f5fbfb86c6ae01411823f46dabd90379fff4a44
