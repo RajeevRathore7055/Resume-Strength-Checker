@@ -8,7 +8,9 @@ from dotenv import load_dotenv
 # Render pe Environment Variables se automatically aayega
 load_dotenv()
 
-MYSQL_HOST     = os.getenv("MYSQLHOST",     "localhost")
+# MYSQL_HOST     = os.getenv("MYSQLHOST",     "localhost")
+MYSQL_HOST     = os.getenv("MYSQLHOST",     "thomas.proxy.rlwy.net:36051")
+# MYSQL_PORT     = os.getenv("MYSQLPORT",     "3306")
 MYSQL_PORT     = os.getenv("MYSQLPORT",     "3306")
 MYSQL_USER     = os.getenv("MYSQLUSER",     "root")
 MYSQL_PASSWORD = os.getenv("MYSQLPASSWORD", "")
