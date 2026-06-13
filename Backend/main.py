@@ -48,7 +48,7 @@ def get_db():
 #             "index.html"
 #         )
 #     )
-    @app.get("/")
+@app.get("/")
 def home():
 
     current_dir = Path(__file__).parent
