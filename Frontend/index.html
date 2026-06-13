@@ -1,205 +1,151 @@
-<script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Resume Matcher</title>
 
-const API = window.location.origin;
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",sans-serif}
+body{min-height:100vh;background:radial-gradient(circle at top left,#312e81,#0f172a),radial-gradient(circle at bottom right,#7e22ce,#111827);color:white;display:flex;justify-content:center;align-items:center;padding:30px}
+.container{width:100%;max-width:1100px;backdrop-filter:blur(20px);background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,.15);border-radius:25px;padding:35px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:25px}
+.card{background:rgba(255,255,255,.05);padding:20px;border-radius:15px}
+button{width:100%;padding:12px;background:#06b6d4;color:white;border:none;border-radius:10px;cursor:pointer}
+button:disabled{opacity:.5}
+.score-circle{width:150px;height:150px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:auto;font-size:30px}
+.badge{padding:6px 10px;margin:4px;display:inline-block;background:#8b5cf6;border-radius:20px}
+.loading{color:#38bdf8}
+.success{color:#22c55e}
+.error{color:#ef4444}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1 style="text-align:center">🤖 AI Resume Matcher</h1>
+
+<div class="grid">
+
+<div class="card">
+<h3>Upload JD</h3>
+<input type="file" id="jdFile">
+<button id="jdBtn" onclick="uploadJD()">Upload JD</button>
+</div>
+
+<div class="card">
+<h3>Upload Resume</h3>
+<input type="file" id="resumeFile">
+<button id="resumeBtn" onclick="uploadResume()">Analyze</button>
+</div>
+
+</div>
+
+<div style="text-align:center;margin-top:20px">
+<div class="score-circle" id="scoreCircle">0%</div>
+<div id="output">Waiting...</div>
+</div>
+
+</div>
+
+<script>
 
 let jdSkills = [];
 
-async function uploadJD() {
+/* =========================
+   🔥 AUTO DETECT BACKEND URL
+========================= */
+const API =
+  window.location.hostname === "localhost"
+    ? "http://127.0.0.1:8000"
+    : window.location.origin;
 
-    const file = document.getElementById("jdFile").files[0];
+console.log("API BASE:", API);
 
-    if (!file) {
-        alert("Please select JD file");
-        return;
-    }
+/* =========================
+   UPLOAD JD
+========================= */
+async function uploadJD(){
 
-    const btn = document.getElementById("jdBtn");
-    btn.disabled = true;
+const file = document.getElementById("jdFile").files[0];
+if(!file){ alert("Select JD"); return; }
 
-    document.getElementById("output").innerHTML =
-        "<div class='loading'>⏳ Processing JD...</div>";
+document.getElementById("output").innerHTML = "Loading JD...";
 
-    const formData = new FormData();
-    formData.append("file", file);
+const form = new FormData();
+form.append("file", file);
 
-    try {
+try{
 
-        const res = await fetch(API + "/upload-jd/", {
-            method: "POST",
-            body: formData
-        });
+const res = await fetch(`${API}/upload-jd/`, {
+method:"POST",
+body:form
+});
 
-        if (!res.ok) {
-            throw new Error("JD Upload Failed");
-        }
+if(!res.ok) throw new Error("JD failed");
 
-        const data = await res.json();
+const data = await res.json();
 
-        jdSkills = data.jd_skills || [];
+jdSkills = data.jd_skills || [];
 
-        document.getElementById("output").innerHTML = `
-            <h3 class="success">✅ JD Uploaded Successfully</h3>
+document.getElementById("output").innerHTML =
+"JD uploaded: " + jdSkills.join(", ");
 
-            <div class="skills-section">
-                <h4>🔍 Detected JD Skills (${jdSkills.length})</h4>
-
-                ${
-                    jdSkills.length
-                    ? jdSkills.map(
-                        s => `<span class="badge">${s}</span>`
-                    ).join("")
-                    : "<p style='color:#94a3b8'>No skills detected</p>"
-                }
-            </div>
-        `;
-
-    } catch (e) {
-
-        console.error(e);
-
-        document.getElementById("output").innerHTML =
-            `<div class="error-msg">❌ ${e.message}</div>`;
-
-    } finally {
-
-        btn.disabled = false;
-
-    }
+}catch(e){
+document.getElementById("output").innerHTML = "❌ JD error";
 }
 
+}
 
-async function uploadResume() {
+/* =========================
+   UPLOAD RESUME
+========================= */
+async function uploadResume(){
 
-    if (!jdSkills.length) {
-        alert("Upload JD first!");
-        return;
-    }
+if(!jdSkills.length){
+alert("Upload JD first");
+return;
+}
 
-    const file = document.getElementById("resumeFile").files[0];
+const file = document.getElementById("resumeFile").files[0];
+if(!file){ alert("Select resume"); return; }
 
-    if (!file) {
-        alert("Select a Resume file");
-        return;
-    }
+document.getElementById("output").innerHTML = "Analyzing...";
 
-    const btn = document.getElementById("resumeBtn");
-    btn.disabled = true;
+const form = new FormData();
+form.append("file", file);
+form.append("jd_skills", JSON.stringify(jdSkills));
 
-    document.getElementById("output").innerHTML =
-        "<div class='loading'>⏳ Analyzing Resume...</div>";
+try{
 
-    const formData = new FormData();
+const res = await fetch(`${API}/upload-resume/`, {
+method:"POST",
+body:form
+});
 
-    formData.append("file", file);
-    formData.append("jd_skills", JSON.stringify(jdSkills));
+if(!res.ok) throw new Error("Resume failed");
 
-    try {
+const data = await res.json();
 
-        const res = await fetch(API + "/upload-resume/", {
-            method: "POST",
-            body: formData
-        });
+const score = data.match_score || 0;
 
-        if (!res.ok) {
-            throw new Error("Resume Upload Failed");
-        }
+document.getElementById("scoreCircle").innerHTML = score + "%";
 
-        const data = await res.json();
+document.getElementById("scoreCircle").style.background =
+`conic-gradient(#06b6d4 ${score*3.6}deg,#1e293b 0deg)`;
 
-        const score = data.match_score || 0;
-        const matched = data.matched || [];
-        const missing = data.missing || [];
+document.getElementById("output").innerHTML =
+"Matched: " + (data.matched || []).join(", ");
 
-        document.getElementById("scoreCircle").innerHTML =
-            score + "%";
+}catch(e){
+document.getElementById("output").innerHTML = "❌ Resume error";
+}
 
-        document.getElementById("scoreCircle").style.background =
-            `conic-gradient(
-                #06b6d4 ${score * 3.6}deg,
-                #1e293b ${score * 3.6}deg
-            )`;
-
-        document.getElementById("output").innerHTML = `
-
-            <h3 class="success">
-                ✅ Resume Analysis Complete
-            </h3>
-
-            <hr class="divider">
-
-            <div class="skills-section">
-
-                <h4>✅ Matched Skills (${matched.length})</h4>
-
-                ${
-                    matched.length
-                    ? matched.map(
-                        s => `<span class="badge matched">✅ ${s}</span>`
-                    ).join("")
-                    : "<p style='color:#94a3b8'>No skills matched</p>"
-                }
-
-            </div>
-
-            <div class="skills-section">
-
-                <h4>❌ Missing Skills (${missing.length})</h4>
-
-                ${
-                    missing.length
-                    ? missing.map(
-                        s => `<span class="badge missing">❌ ${s}</span>`
-                    ).join("")
-                    : "<p style='color:#22c55e'>All JD skills matched! 🎉</p>"
-                }
-
-            </div>
-
-            <hr class="divider">
-
-            <div class="skills-section">
-
-                <h4>📄 JD Skills</h4>
-
-                ${
-                    (data.jd_skills || []).map(
-                        s => `<span class="badge">${s}</span>`
-                    ).join("")
-                }
-
-            </div>
-
-            <div class="skills-section">
-
-                <h4>📑 Resume Skills</h4>
-
-                ${
-                    (data.resume_skills || []).map(
-                        s => `<span class="badge">${s}</span>`
-                    ).join("")
-                }
-
-            </div>
-
-            <hr class="divider">
-
-            <p style="color:#94a3b8;font-size:13px">
-                📁 File: ${data.filename || ""}
-            </p>
-        `;
-
-    } catch (e) {
-
-        console.error(e);
-
-        document.getElementById("output").innerHTML =
-            `<div class="error-msg">❌ ${e.message}</div>`;
-
-    } finally {
-
-        btn.disabled = false;
-
-    }
 }
 
 </script>
+
+</body>
+</html>
