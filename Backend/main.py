@@ -6,6 +6,9 @@ import json
 from database import SessionLocal, engine, Base
 from models   import Resume
 from matcher  import extract_text, extract_skills, match_skills
+from fastapi.responses import FileResponse
+
+
 
 Base.metadata.create_all(bind=engine)
 
@@ -27,8 +30,11 @@ def get_db():
         db.close()
 
 
+# @app.get("/")
+# def root():
 @app.get("/")
-def root():
+def home():
+    return FileResponse("static/index.html")
     return {"status": "ok", "message": "AI Resume Matcher API is running!"}
 
 
