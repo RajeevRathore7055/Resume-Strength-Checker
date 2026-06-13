@@ -1,7 +1,8 @@
 from fastapi import FastAPI, File, UploadFile, Form, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-
+from fastapi.responses import FileResponse
+import os
 from sqlalchemy.orm import Session
 
 import json
@@ -35,10 +36,17 @@ def get_db():
         db.close()
 
 
+# @app.get("/")
+# def home():
+#     return {"message": "Resume Matcher Backend Running"}
 @app.get("/")
 def home():
-    return {"message": "Resume Matcher Backend Running"}
-
+    return FileResponse(
+        os.path.join(
+            "Frontend",
+            "index.html"
+        )
+    )
 
 @app.get("/health")
 def health():
