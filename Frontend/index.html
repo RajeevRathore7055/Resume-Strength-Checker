@@ -1,4 +1,125 @@
 <!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AI Resume Matcher</title>
+
+<style>
+body{
+background:#0f172a;
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+font-family:sans-serif;
+}
+.container{
+width:700px;
+padding:20px;
+background:#1e293b;
+border-radius:10px;
+}
+button{
+width:100%;
+padding:10px;
+margin-top:10px;
+background:#06b6d4;
+border:none;
+color:white;
+cursor:pointer;
+}
+.badge{
+display:inline-block;
+margin:5px;
+padding:5px 10px;
+background:#8b5cf6;
+border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>AI Resume Matcher</h2>
+
+<input type="file" id="jdFile">
+<button onclick="uploadJD()">Upload JD</button>
+
+<hr>
+
+<input type="file" id="resumeFile">
+<button onclick="uploadResume()">Analyze Resume</button>
+
+<h3 id="score">Score: 0%</h3>
+
+<div id="output"></div>
+
+</div>
+
+<script>
+
+let jdSkills = [];
+
+/* AUTO DETECT RENDER OR LOCAL */
+const API = window.location.origin;
+
+async function uploadJD(){
+
+const file = document.getElementById("jdFile").files[0];
+if(!file) return alert("Select JD");
+
+const form = new FormData();
+form.append("file", file);
+
+const res = await fetch(API+"/upload-jd/", {
+method:"POST",
+body:form
+});
+
+const data = await res.json();
+jdSkills = data.jd_skills || [];
+
+document.getElementById("output").innerHTML =
+jdSkills.map(s=>`<span class="badge">${s}</span>`).join("");
+
+}
+
+async function uploadResume(){
+
+const file = document.getElementById("resumeFile").files[0];
+if(!file) return alert("Select Resume");
+
+const form = new FormData();
+form.append("file", file);
+form.append("jd_skills", JSON.stringify(jdSkills));
+
+const res = await fetch(API+"/upload-resume/", {
+method:"POST",
+body:form
+});
+
+const data = await res.json();
+
+document.getElementById("score").innerText =
+"Score: " + data.match_score + "%";
+
+document.getElementById("output").innerHTML =
+"Matched: " + data.matched.join(", ") +
+"<br>Missing: " + data.missing.join(", ");
+
+}
+
+</script>
+
+</body>
+</html>
+
+
+
+<!-- <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -442,4 +563,4 @@ async function uploadResume(){
 </script>
 
 </body>
-</html>
+</html> -->
